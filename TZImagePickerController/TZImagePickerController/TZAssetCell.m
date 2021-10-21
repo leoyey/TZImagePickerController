@@ -421,12 +421,12 @@
         self.posterImageView.image = postImage;
         [self setNeedsLayout];
     }];
-    if (model.selectedCount) {
-        self.selectedCountButton.hidden = NO;
-        [self.selectedCountButton setTitle:[NSString stringWithFormat:@"%zd",model.selectedCount] forState:UIControlStateNormal];
-    } else {
+//    if (model.selectedCount) {
+//        self.selectedCountButton.hidden = NO;
+//        [self.selectedCountButton setTitle:[NSString stringWithFormat:@"%zd",model.selectedCount] forState:UIControlStateNormal];
+//    } else {
         self.selectedCountButton.hidden = YES;
-    }
+//    }
     
     if (self.albumCellDidSetModelBlock) {
         self.albumCellDidSetModelBlock(self, _posterImageView, _titleLabel);
@@ -437,8 +437,8 @@
     [super layoutSubviews];
     _selectedCountButton.frame = CGRectMake(self.contentView.tz_width - 24, 23, 24, 24);
     NSInteger titleHeight = ceil(self.titleLabel.font.lineHeight);
-    self.titleLabel.frame = CGRectMake(80, (self.tz_height - titleHeight) / 2, self.tz_width - 80 - 50, titleHeight);
-    self.posterImageView.frame = CGRectMake(0, 0, 70, 70);
+    self.titleLabel.frame = CGRectMake(60, (self.tz_height - titleHeight) / 2, self.tz_width - 60 - 50, titleHeight);
+    self.posterImageView.frame = CGRectMake(0, 0, 48, 48);
     
     if (self.albumCellDidLayoutSubviewsBlock) {
         self.albumCellDidLayoutSubviewsBlock(self, _posterImageView, _titleLabel);

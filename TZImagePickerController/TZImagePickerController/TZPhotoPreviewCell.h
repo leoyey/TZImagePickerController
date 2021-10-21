@@ -12,6 +12,7 @@
 @interface TZAssetPreviewCell : UICollectionViewCell
 @property (nonatomic, strong) TZAssetModel *model;
 @property (nonatomic, copy) void (^singleTapGestureBlock)(void);
+@property (nonatomic, copy) BOOL (^isHideNaviBarBlock)(void);
 - (void)configSubviews;
 - (void)photoPreviewCollectionViewDidScroll;
 @end

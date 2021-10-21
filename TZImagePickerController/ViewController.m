@@ -31,6 +31,7 @@
     
     CGFloat _itemWH;
     CGFloat _margin;
+    BOOL isPushed;
 }
 @property (nonatomic, strong) UIImagePickerController *imagePickerVc;
 @property (nonatomic, strong) UICollectionView *collectionView;
@@ -89,6 +90,14 @@
     _selectedPhotos = [NSMutableArray array];
     _selectedAssets = [NSMutableArray array];
     [self configCollectionView];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    if (!isPushed) {
+        isPushed = YES;
+        [self pushTZImagePickerController];
+    }
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -276,6 +285,61 @@
     if (self.maxCountTF.text.integerValue <= 0) {
         return;
     }
+    TZImagePickerController *picker = [[TZImagePickerController alloc] initWithMaxImagesCount:9 columnNumber:4 delegate:self pushPhotoPickerVc:YES];
+    UIColor *pickerDefaultColor = [UIColor colorWithRed:0/255.0 green:114/255.0 blue:255/255.0 alpha:1.0];
+    picker.iconThemeColor = pickerDefaultColor;
+    picker.showSelectedIndex = YES;
+    picker.showPhotoCannotSelectLayer = YES;
+    picker.maxImagesCount = 9;
+    picker.naviBgColor = [UIColor whiteColor];
+    picker.naviTitleColor = [UIColor blackColor];
+    picker.barItemTextColor = [UIColor blackColor];
+    picker.statusBarStyle = UIStatusBarStyleDefault;
+    picker.photoOriginDefImageName = @"icon_photo_original_unset";
+    picker.photoOriginSelImageName = @"icon_photo_original_set";
+    picker.photoPreviewOriginDefImageName = @"icon_photo_original_unset";
+    picker.doneBtnTitleStr = @"发送";
+    picker.oKButtonTitleColorNormal = [UIColor whiteColor];
+    picker.oKButtonTitleColorDisabled = [UIColor whiteColor];
+    picker.modalPresentationStyle = UIModalPresentationFullScreen;
+    picker.autoSelectCurrentWhenDone = NO;
+    [picker.navigationItem.backBarButtonItem setTitle:@""];
+    picker.photoPickerPageUIConfigBlock = ^(UICollectionView *collectionView, UIView *bottomToolBar, UIButton *previewButton, UIButton *originalPhotoButton, UILabel *originalPhotoLabel, UIButton *doneButton, UIImageView *numberImageView, UILabel *numberLabel, UIView *divideLine) {
+        collectionView.backgroundColor = [UIColor colorWithRed:246/255.0 green:249/255.0 blue:255/255.0 alpha:0.78];
+//        [originalPhotoButton setImage:[UIImage imageNamed:@"icon_photo_original_unset"] forState:UIControlStateNormal];
+//        [originalPhotoButton setImage:[UIImage imageNamed:@"icon_photo_original_set"] forState:UIControlStateSelected];
+//        doneButton.layer.cornerRadius = 4;
+        divideLine.hidden = YES;
+    };
+    picker.photoPickerPageDidLayoutSubviewsBlock = ^(UICollectionView *collectionView, UIView *bottomToolBar, UIButton *previewButton, UIButton *originalPhotoButton, UILabel *originalPhotoLabel, UIButton *doneButton, UIImageView *numberImageView, UILabel *numberLabel, UIView *divideLine) {
+        CGFloat heightDelta = 8;
+        //bottomToolBar.frame = CGRectInset(bottomToolBar.frame, 0, -heightDelta);//CGRectMake(0, bottomToolBar.frame.origin.y - heightDelta, bottomToolBar.frame.size.width, bottomToolBar.frame.size.height + heightDelta);
+//        previewButton.frame = CGRectOffset(previewButton.frame, 6, 0);
+//        originalPhotoButton.frame = CGRectOffset(originalPhotoButton.frame, 138, 0);
+//        doneButton.frame = CGRectMake(bottomToolBar.frame.size.width-80-16,10,80,32);
+        // 隐藏原图大小，因为视频计算不出大小，影响用户体验
+        originalPhotoLabel.frame = CGRectMake(0, 0, 0, 0);
+        numberImageView.frame = CGRectMake(0, 0, 0, 0);
+    };
+    picker.photoPreviewPageDidLayoutSubviewsBlock = ^(UICollectionView *collectionView, UIView *naviBar, UIButton *backButton, UIButton *selectButton, UILabel *indexLabel, UIView *toolBar, UIButton *originalPhotoButton, UILabel *originalPhotoLabel, UIButton *doneButton, UIImageView *numberImageView, UILabel *numberLabel) {
+        // 隐藏原图大小，因为视频计算不出大小，影响用户体验
+        originalPhotoLabel.frame = CGRectMake(0, 0, 0, 0);
+        numberImageView.frame = CGRectMake(0, 0, 0, 0);
+    };
+//    picker.navLeftBarButtonSettingBlock = ^(UIButton *leftButton) {
+//       // [leftButton setTitle:@" " forState:UIControlStateNormal];
+////        leftButton = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
+//    };
+    picker.allowTakePicture = NO;
+    picker.allowCameraLocation = NO;
+    picker.allowTakeVideo = NO;
+    picker.allowPickingVideo = YES;
+    picker.allowPickingMultipleVideo = YES;
+    picker.allowPickingOriginalPhoto = YES;
+    [self presentViewController:picker animated:YES completion:nil];
+    return;
+    
+    
     // 设置languageBundle以使用其它语言，必须在TZImagePickerController初始化前设置 / Set languageBundle to use other language
     // [TZImagePickerConfig sharedInstance].languageBundle = [NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"tz-ru" ofType:@"lproj"]];
 

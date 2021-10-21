@@ -519,8 +519,12 @@
         if (currentTime.value == durationTime.value) [_player.currentItem seekToTime:CMTimeMake(0, 1)];
         [_player play];
         [_playButton setImage:nil forState:UIControlStateNormal];
-        [UIApplication sharedApplication].statusBarHidden = YES;
-        if (self.singleTapGestureBlock) {
+        //[UIApplication sharedApplication].statusBarHidden = YES;
+        BOOL isHideNaviBar = NO;
+        if (self.isHideNaviBarBlock) {
+            isHideNaviBar = self.isHideNaviBarBlock();
+        }
+        if (self.singleTapGestureBlock && !isHideNaviBar) {
             self.singleTapGestureBlock();
         }
     } else {
@@ -531,7 +535,11 @@
 - (void)pausePlayerAndShowNaviBar {
     [_player pause];
     [_playButton setImage:[UIImage tz_imageNamedFromMyBundle:@"MMVideoPreviewPlay"] forState:UIControlStateNormal];
-    if (self.singleTapGestureBlock) {
+    BOOL isHideNaviBar = YES;
+    if (self.isHideNaviBarBlock) {
+        isHideNaviBar = self.isHideNaviBarBlock();
+    }
+    if (self.singleTapGestureBlock && isHideNaviBar) {
         self.singleTapGestureBlock();
     }
 }
