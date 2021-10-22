@@ -72,7 +72,6 @@
         self.thumbNewMode = YES;
     }
     [self configCollectionView];
-    [self configThumbCollView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
     self.view.clipsToBounds = YES;
@@ -157,6 +156,22 @@
 //    static CGFloat rgb = 34 / 255.0;
     _toolBar.backgroundColor = [UIColor whiteColor];//[UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.7];
     
+    UICollectionViewFlowLayout *thumbCollViewLayout = [[UICollectionViewFlowLayout alloc] init];
+    thumbCollViewLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    [thumbCollViewLayout setSectionInset:UIEdgeInsetsMake(0, 10, 0, 10)];
+    _thumbCollView = [[UICollectionView alloc] initWithFrame:CGRectMake(0,0,self.view.tz_width,80) collectionViewLayout:thumbCollViewLayout];
+    _thumbCollView.backgroundColor = [UIColor whiteColor];
+    _thumbCollView.dataSource = self;
+    _thumbCollView.delegate = self;
+    _thumbCollView.contentOffset = CGPointMake(6, 10);
+    _thumbCollView.contentSize = CGSizeMake(60, 60);
+    _thumbCollView.showsHorizontalScrollIndicator = NO;
+    if (@available(iOS 11, *)) {
+        _thumbCollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
+    [_thumbCollView registerClass:[TZThumbCell class] forCellWithReuseIdentifier:@"TZThumbCell"];
+    [_toolBar addSubview:_thumbCollView];
+    
     TZImagePickerController *_tzImagePickerVc = (TZImagePickerController *)self.navigationController;
     
     if (_tzImagePickerVc.allowPickingOriginalPhoto) {
@@ -219,24 +234,6 @@
     if (_tzImagePickerVc.photoPreviewPageUIConfigBlock) {
         _tzImagePickerVc.photoPreviewPageUIConfigBlock(_collectionView, _naviBar, _backButton, _selectButton, _indexLabel, _toolBar, _originalPhotoButton, _originalPhotoLabel, _doneButton, _numberImageView, _numberLabel);
     }
-}
-
-- (void)configThumbCollView {
-    UICollectionViewFlowLayout *thumbCollViewLayout = [[UICollectionViewFlowLayout alloc] init];
-    thumbCollViewLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-    [thumbCollViewLayout setSectionInset:UIEdgeInsetsMake(0, 10, 0, 10)];
-    _thumbCollView = [[UICollectionView alloc] initWithFrame:CGRectMake(0,0,self.view.tz_width,80) collectionViewLayout:thumbCollViewLayout];
-    _thumbCollView.backgroundColor = [UIColor whiteColor];
-    _thumbCollView.dataSource = self;
-    _thumbCollView.delegate = self;
-    _thumbCollView.contentOffset = CGPointMake(6, 10);
-    _thumbCollView.contentSize = CGSizeMake(60, 60);
-    _thumbCollView.showsHorizontalScrollIndicator = NO;
-    if (@available(iOS 11, *)) {
-        _thumbCollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
-    [_thumbCollView registerClass:[TZThumbCell class] forCellWithReuseIdentifier:@"TZThumbCell"];
-    [self.view addSubview:_thumbCollView];
 }
 
 - (void)configCollectionView {
@@ -326,20 +323,21 @@
         [_collectionView reloadData];
     }
     
-    CGFloat toolBarHeight = 44 + [TZCommonTools tz_safeAreaInsets].bottom;
+    CGFloat thumbCollHeight = _thumbCollView.hidden ? 0 : _thumbCollView.tz_height;
+    CGFloat toolBarHeight = 44 + thumbCollHeight + [TZCommonTools tz_safeAreaInsets].bottom;
     CGFloat toolBarTop = self.view.tz_height - toolBarHeight;
     _toolBar.frame = CGRectMake(0, toolBarTop, self.view.tz_width, toolBarHeight);
     if (_tzImagePickerVc.allowPickingOriginalPhoto) {
         CGFloat fullImageWidth = [_tzImagePickerVc.fullImageBtnTitleStr boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:[UIFont systemFontOfSize:16]} context:nil].size.width;
-        _originalPhotoButton.frame = CGRectMake(165, 0, fullImageWidth + 56, 44);
-        _originalPhotoLabel.frame = CGRectMake(165 + fullImageWidth + 42, 0, 80, 44);
+        _originalPhotoButton.frame = CGRectMake(165, thumbCollHeight, fullImageWidth + 56, 44);
+        _originalPhotoLabel.frame = CGRectMake(165 + fullImageWidth + 42, thumbCollHeight, 80, 44);
     }
     [_doneButton sizeToFit];
-    _doneButton.frame = CGRectMake(self.view.tz_width - MAX(86, _doneButton.tz_width) - 16, 10, MAX(86, _doneButton.tz_width), 32);
-    _numberImageView.frame = CGRectMake(_doneButton.tz_left - 24 - 5, 10, 24, 24);
+    _doneButton.frame = CGRectMake(self.view.tz_width - MAX(86, _doneButton.tz_width) - 16, thumbCollHeight + 10, MAX(86, _doneButton.tz_width), 32);
+    _numberImageView.frame = CGRectMake(_doneButton.tz_left - 24 - 5, thumbCollHeight + 10, 24, 24);
     _numberLabel.frame = _numberImageView.frame;
 
-    _thumbCollView.frame = CGRectMake(0, _toolBar.tz_top - _thumbCollView.tz_height, _thumbCollView.tz_width, _thumbCollView.tz_height);
+    _thumbCollView.frame = CGRectMake(0, 0, _thumbCollView.tz_width, _thumbCollView.tz_height);
 
     [self configCropView];
     
@@ -705,11 +703,15 @@
             if (_isSelectOriginalPhoto) _originalPhotoLabel.hidden = NO;
         }
     }
+    BOOL thumbHideOld = _thumbCollView.hidden;
     if ([self isShowThumbCollView]) {
         _thumbCollView.hidden = NO;
         [_thumbCollView reloadData];
     } else {
         _thumbCollView.hidden = YES;
+    }
+    if (thumbHideOld != _thumbCollView.hidden) {
+        [self.view setNeedsLayout];
     }
     
     _doneButton.hidden = NO;
